@@ -1,7 +1,10 @@
 #Group Project 2
 ## Langdon Hatton & Leighann Robinson
 ### DS160 SP23
+#install.packages("tidyverse") 
+#install.packages('caTools')
 
+library(caTools)
 library(tidyverse)
 dataset=read.csv("titles.csv")
 
@@ -65,14 +68,97 @@ dataset$imdb_score=ifelse(is.na(dataset$imdb_score),
                           dataset$imdb_score)
 colSums(is.na(dataset)) #There are no longer missing values 
 
-#Graphs and Data Visualization
+#proportion table for age certification and plot
+table(dataset$age_certification)
+freq_table = table(dataset$age_certification)
+prop_table = prop.table(freq_table)
+result_table = data.frame(age_certification = names(freq_table), 
+                          frequency = as.vector(freq_table),
+                          percentage = paste0(format(prop_table*100, digits=4), "%"))
+colnames(result_table) = c("Age Verification", "Count", 'Percentage')
+print(result_table)
+ggplot(data = dataset, aes(x = age_certification)) + 
+  geom_bar(fill = "blue") + 
+  labs(title = "Age Certification Distribution",
+       x = "Certifications",
+       y = "Count")
 
+#proportions for movie type 
+table(dataset$type)
+freq_table = table(dataset$type)
+prop_table = prop.table(freq_table)
+result_table = data.frame(type = names(freq_table), 
+                          frequency = as.vector(freq_table),
+                          percentage = paste0(format(prop_table*100, digits=4), "%"))
+colnames(result_table) = c("Type", "Count", 'Percentage')
+print(result_table)
 
-##Splitting the data into 2 sets, y variable is imdb_score
+type_counts = table(dataset$type)
+pie(type_counts, labels = c("Movies", "Shows"), 
+    main = "Movie vs. Show Proportions", col = c("red", "blue"))
+
+#various graphs
+
+#histogram for tmbd_score
+ggplot(data = dataset, aes(x = tmdb_score)) + 
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "white") + 
+  labs(title = "tmdb_score Distribution",
+       x = "tmdb_Score",
+       y = "Count")
+
+#scatter plot for runtime vs seasons
+ggplot(data = dataset, aes(x = runtime, y = seasons)) + 
+  geom_point(color = "red") + 
+  labs(title = "Runtime vs Seasons",
+       x = "Runtime",
+       y = "Seasons")
+
+#scatter plot for seasons vs imdb_score
+ggplot(data = dataset, aes(y = seasons, x = imdb_score)) + 
+  geom_point(color = "blue") + 
+  labs(title = "Runtime vs imdb_score",
+       x = "imdb_score",
+       y = "seasons")
+
+#scatter plot for runtime versus age certification
+ggplot(data = dataset, aes(y = runtime, x = age_certification)) + 
+  geom_point() + 
+  labs(title = "Runtime vs Age Certification",
+       y = "Runtime",
+       x = "Age Certification")
+
+#Splitting the data into 2 sets, release_year is y variable, imdb_score is x variable
 library(caTools)
 set.seed(10)
-split=sample.split(dataset$imdb_score, SplitRatio = 0.8) #80% training, 20% test
+names(dataset)
+split=sample.split(dataset$release_year, SplitRatio = 0.8) #80% training, 20% test
 training_set=subset(dataset, split=TRUE)
-test_set=subset(dataset, split=FALSE)
+test_set=subset(dataset, split=FALSE)                
 
+#MLR training
+names(dataset)
+MLR=lm(formula=release_year~imdb_score,
+       data=training_set)
+summary(MLR)
+#The equation for the release year is: 2021.48775 -0.77880*(imdb_score)
+## The above variables are statistically significant because their P-values are less than 0.05
+
+#Mean Square Error for release_year vs imdb_score
+summ=summary(MLR)
+MSE=(mean(summ$residuals^2))
+paste("Mean squared error :", MSE)
+
+#R-square
+summary(MLR)
+
+#The R Square value is 6.884 on 5848 degrees of freedom
+##This is to say that the model is not necessarily a good model
+
+#Testing Set Prediction 
+y_pred=predict(MLR, newdata=test_set) #Setting a variable for the predicted y values
+data=data.frame(test_set$release_year, y_pred)
+head(data)
+glimpse(data)
+
+#As can be seen above in the head and glimpse of the data, the model is not very accurate in predicting the release year based on the imdb_score
 
