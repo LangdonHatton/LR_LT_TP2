@@ -88,7 +88,11 @@ result_table = data.frame(age_certification = names(freq_table),
                            percentage = paste0(format(prop_table*100, digits=4), "%"))
 colnames(result_table) = c("Age Verification", "Count", 'Percentage')
 print(result_table)
-
+ggplot(data = dataset, aes(x = age_certification)) + 
+  geom_bar(fill = "blue") + 
+  labs(title = "Age Certification Distribution",
+       x = "Certifications",
+       y = "Count")
 
 #proportions for movie type 
 table(dataset$type)
@@ -104,10 +108,34 @@ type_counts = table(dataset$type)
 pie(type_counts, labels = c("Movies", "Shows"), 
     main = "Movie vs. Show Proportions", col = c("red", "blue"))
 
+#various graphs
 
+#histogram for tmbd_score
+ggplot(data = dataset, aes(x = tmdb_score)) + 
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "white") + 
+  labs(title = "tmdb_score Distribution",
+       x = "tmdb_Score",
+       y = "Count")
 
+#scatter plot for runtime vs seasons
+ggplot(data = dataset, aes(x = runtime, y = seasons)) + 
+  geom_point(color = "red") + 
+  labs(title = "Runtime vs Seasons",
+       x = "Runtime",
+       y = "Seasons")
 
+#scatter plot for seasons vs imdb_score
+ggplot(data = dataset, aes(y = seasons, x = imdb_score)) + 
+  geom_point(color = "blue") + 
+  labs(title = "Runtime vs imdb_score",
+       x = "imdb_score",
+       y = "seasons")
 
-
+#scatter plot for runtime versus age certification
+ggplot(data = dataset, aes(y = runtime, x = age_certification)) + 
+  geom_point() + 
+  labs(title = "Runtime vs Age Certification",
+       y = "Runtime",
+       x = "Age Certification")
 
 
